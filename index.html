@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#15803d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lucros">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>Lucros</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #f4f5f7; --card: #ffffff; --text: #111827; --muted: #6b7280; --line: #e5e7eb;
+    --accent: #15803d; --accent-ink: #ffffff; --neg: #dc2626; --pos: #16a34a;
+    --hero-1: #166534; --hero-2: #15803d; --warn-bg: #fef3c7; --warn: #92400e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b0d10; --card: #16191e; --text: #f3f4f6; --muted: #9ca3af; --line: #262a31;
+      --accent: #22c55e; --accent-ink: #052e16; --neg: #f87171; --pos: #4ade80;
+      --hero-1: #14532d; --hero-2: #166534; --warn-bg: #3a2a0a; --warn: #fcd34d;
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  [hidden] { display: none !important; }
+  html, body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    padding: env(safe-area-inset-top) env(safe-area-inset-right)
+             calc(env(safe-area-inset-bottom) + 90px) env(safe-area-inset-left);
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 14px 14px 0; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+  header .dir { display: flex; align-items: center; gap: 6px; }
+  h1 { font-size: 26px; margin: 0; letter-spacing: -0.02em; }
+  h2 { font-size: 13px; color: var(--muted); font-weight: 600; margin: 0 0 10px; text-transform: uppercase; letter-spacing: .05em; }
+  header select { width: auto; max-width: 48vw; padding: 8px 30px 8px 12px; font-size: 15px; }
+
+  button {
+    font: inherit; border: 0; border-radius: 12px; padding: 12px 16px; cursor: pointer;
+    background: var(--line); color: var(--text);
+  }
+  button:disabled { opacity: .5; }
+  button.primary { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  button.danger { background: transparent; color: var(--neg); }
+  button.ghost { background: transparent; color: var(--muted); padding: 8px 10px; }
+  button.link { background: transparent; color: var(--accent); padding: 4px 0; font-size: 15px; }
+  button.full { width: 100%; margin-bottom: 10px; }
+  button.icone { background: transparent; color: var(--muted); padding: 6px; display: flex; }
+  button.icone svg { width: 24px; height: 24px; }
+
+  input, select, textarea {
+    font: inherit; font-size: 16px; width: 100%; min-width: 0; padding: 12px; border: 1px solid var(--line);
+    border-radius: 12px; background: var(--card); color: var(--text); -webkit-appearance: none; appearance: none;
+  }
+  input[type=date] { min-height: 48px; }
+  input[type=date]::-webkit-date-and-time-value { text-align: left; }
+  input[type=checkbox], input[type=color] { -webkit-appearance: auto; appearance: auto; }
+  input[type=checkbox] { width: 22px; height: 22px; padding: 0; }
+  input[type=color] { height: 48px; padding: 4px; }
+  select {
+    background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+    background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 32px;
+  }
+  textarea { resize: vertical; min-height: 56px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
+  .check { display: flex; align-items: center; gap: 10px; margin-top: 14px; color: var(--text); font-size: 16px; }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+  .aviso { background: var(--warn-bg); color: var(--warn); border-radius: 14px; padding: 12px 14px; font-size: 15px; margin-bottom: 12px;
+    display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .aviso button { background: var(--warn); color: var(--warn-bg); padding: 8px 14px; font-weight: 600; flex-shrink: 0; }
+  .vazio { text-align: center; color: var(--muted); padding: 24px 0; }
+  .pos { color: var(--pos); } .neg { color: var(--neg); }
+  .muted { color: var(--muted); }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+
+  /* Login */
+  #vLogin .card { margin-top: 10vh; }
+  #vLogin button { width: 100%; margin-top: 16px; }
+  .erro { color: var(--neg); font-size: 14px; margin: 10px 0 0; min-height: 1em; }
+
+  /* Saldo */
+  .saldo {
+    background: linear-gradient(145deg, var(--hero-1), var(--hero-2)); color: #fff;
+    border-radius: 22px; padding: 22px 20px; margin-bottom: 12px; text-align: center;
+  }
+  .saldo small { display: block; opacity: .85; font-size: 14px; }
+  .saldo .grande { font-size: 44px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin: 6px 0 4px; font-variant-numeric: tabular-nums; }
+  .saldo .sub { font-size: 17px; opacity: .95; font-variant-numeric: tabular-nums; }
+  .saldo .linha { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.2); font-size: 13px; opacity: .85;
+    display: flex; justify-content: space-around; gap: 8px; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+  .saldo .linha b { display: block; font-size: 15px; opacity: 1; }
+
+  /* Período */
+  .periodo { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin: 18px 0 4px; flex-wrap: wrap; }
+  .nav { display: flex; align-items: center; }
+  .nav button { background: transparent; font-size: 24px; padding: 2px 10px; color: var(--muted); }
+  #periodoLabel { font-weight: 600; background: transparent; padding: 6px 2px; font-size: 15px; white-space: nowrap; }
+  .seg { display: flex; background: var(--line); border-radius: 12px; padding: 3px; }
+  .seg button { padding: 7px 10px; border-radius: 10px; background: transparent; color: var(--muted); font-size: 14px; white-space: nowrap; }
+  .seg button.on { background: var(--card); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .comparar { font-size: 12px; color: var(--muted); margin: 0 4px 10px; }
+
+  /* KPIs */
+  .kpis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+  @media (min-width: 560px) { .kpis { grid-template-columns: repeat(3, 1fr); } }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; min-width: 0; }
+  .kpi small { display: block; color: var(--muted); font-size: 12px; }
+  .kpi strong { display: block; font-size: 20px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 2px 0; }
+  .kpi span { font-size: 12px; color: var(--muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .grafico { position: relative; height: 210px; }
+
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 15px; }
+  td, th { padding: 9px 0 9px 8px; border-top: 1px solid var(--line); text-align: right; white-space: nowrap; }
+  th { border-top: 0; font-size: 12px; color: var(--muted); font-weight: 500; padding-top: 0; }
+  td:first-child, th:first-child { text-align: left; padding-left: 0; }
+  tr.total td { font-weight: 700; }
+  tr.clicavel { cursor: pointer; }
+  #tbDest td { white-space: normal; }
+  .scroll { overflow-x: auto; }
+
+  /* Histórico */
+  details.mes { background: var(--card); border: 1px solid var(--line); border-radius: 16px; margin-bottom: 10px; overflow: hidden; }
+  details.mes summary { list-style: none; padding: 14px 16px; cursor: pointer; }
+  details.mes summary::-webkit-details-marker { display: none; }
+  .mes-top { display: flex; justify-content: space-between; align-items: baseline; }
+  .mes-top strong { font-size: 17px; }
+  .mes-res { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .mes-res b { color: var(--text); }
+  .item {
+    display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center;
+    width: 100%; text-align: left; background: transparent; border-top: 1px solid var(--line);
+    border-radius: 0; padding: 12px 16px;
+  }
+  .item .info { min-width: 0; }
+  .item small { display: block; color: var(--muted); font-size: 13px; }
+  .item .nota { white-space: normal; font-style: italic; margin-top: 2px; }
+  .item .valores { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* Definições */
+  .linha { display: flex; align-items: center; justify-content: space-between; width: 100%; background: transparent; padding: 12px 0; border-radius: 0; border-top: 1px solid var(--line); text-align: left; }
+  .linha:first-child { border-top: 0; }
+  .tag { font-size: 11px; background: var(--line); color: var(--muted); padding: 2px 8px; border-radius: 99px; margin-left: 6px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 10px; }
+  .grid2 > div { min-width: 0; }
+  .ajuda { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
+
+  /* Barra de baixo */
+  .tabbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: flex; justify-content: space-around; align-items: center;
+    background: var(--card); border-top: 1px solid var(--line); padding: 6px 8px calc(env(safe-area-inset-bottom) + 6px);
+  }
+  .tabbar button { background: transparent; color: var(--muted); font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 18px; }
+  .tabbar button svg { width: 24px; height: 24px; }
+  .tabbar button.on { color: var(--accent); }
+  .tabbar .mais { background: var(--accent); color: var(--accent-ink); width: 58px; height: 58px; border-radius: 50%; padding: 0; justify-content: center; margin-top: -28px; box-shadow: 0 6px 18px rgba(0,0,0,.25); }
+  .tabbar .mais svg { width: 30px; height: 30px; }
+
+  /* Diálogos */
+  dialog {
+    border: 0; border-radius: 20px; padding: 0; width: min(560px, calc(100% - 20px));
+    max-height: calc(100% - 40px); overflow: auto; background: var(--card); color: var(--text);
+  }
+  dialog::backdrop { background: rgba(0,0,0,.55); }
+  dialog form { padding: 18px; }
+  .dlg-top { display: flex; justify-content: space-between; align-items: center; }
+  .dlg-top h3 { margin: 0; font-size: 19px; }
+  .existe { font-size: 13px; color: var(--warn); background: var(--warn-bg); border-radius: 10px; padding: 8px 12px; margin-top: 12px; }
+  .preview { margin-top: 14px; padding: 14px; border-radius: 14px; background: var(--bg); font-variant-numeric: tabular-nums; }
+  .preview .l { display: flex; justify-content: space-between; padding: 2px 0; font-size: 14px; color: var(--muted); }
+  .preview .res { display: flex; justify-content: space-between; align-items: baseline; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+  .preview .res strong { font-size: 24px; }
+  .preview .split { display: flex; justify-content: space-between; font-size: 14px; margin-top: 4px; }
+  .acoes { display: flex; gap: 8px; margin-top: 16px; }
+  .acoes .primary { flex: 1; }
+
+  #toast {
+    position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 14px); transform: translateX(-50%);
+    background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-size: 14px;
+    opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 20; max-width: 90%;
+  }
+  #toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 id="titulo">Lucros</h1>
+    <div class="dir">
+      <select id="filtroLoja" aria-label="Filtrar loja" hidden></select>
+      <button class="icone" id="btnDefs" aria-label="Definições" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- LOGIN -->
+  <section id="vLogin" hidden>
+    <form id="formLogin" class="card">
+      <h2>Entrar</h2>
+      <label for="lEmail">Email</label>
+      <input id="lEmail" type="email" autocomplete="username" required>
+      <label for="lPass">Password</label>
+      <input id="lPass" type="password" autocomplete="current-password" required>
+      <button class="primary" type="submit" id="btnEntrar">Entrar</button>
+      <p class="erro" id="loginErro"></p>
+    </form>
+  </section>
+
+  <!-- INÍCIO -->
+  <section id="vInicio" hidden>
+    <div class="saldo">
+      <small id="sLbl">Saldo do mês</small>
+      <div class="grande" id="sSaldo">–</div>
+      <div class="sub" id="sEmerg">Fundo de emergência: –</div>
+      <div class="linha">
+        <span>Lucro do mês<b id="sLucroMes">–</b></span>
+        <span>Dias registados<b id="sDias">–</b></span>
+        <span>Desde sempre<b id="sSempre">–</b></span>
+      </div>
+    </div>
+
+    <div class="aviso" id="avisoOntem" hidden>
+      <span id="avisoOntemTxt">Ainda não registaste ontem.</span>
+      <button id="btnRegOntem">Registar</button>
+    </div>
+
+    <div class="periodo">
+      <div class="nav">
+        <button id="btnAnt" aria-label="Anterior">‹</button>
+        <button id="periodoLabel" title="Voltar a hoje"></button>
+        <button id="btnSeg" aria-label="Seguinte">›</button>
+      </div>
+      <div class="seg" id="segModo">
+        <button data-modo="7d" class="on">7 dias</button>
+        <button data-modo="30d">30 dias</button>
+        <button data-modo="mes">Mês</button>
+        <button data-modo="ano">Ano</button>
+      </div>
+    </div>
+    <p class="comparar" id="comparar"></p>
+
+    <div class="kpis">
+      <div class="kpi"><small>Lucro</small><strong id="kLucro">–</strong><span id="kLucroD"></span></div>
+      <div class="kpi"><small>Faturação</small><strong id="kFat">–</strong><span id="kFatD"></span></div>
+      <div class="kpi"><small>Encomendas</small><strong id="kEnc">–</strong><span id="kEncD"></span></div>
+      <div class="kpi"><small>Publicidade</small><strong id="kPub">–</strong><span id="kPubD"></span></div>
+      <div class="kpi"><small>ROAS</small><strong id="kRoas">–</strong><span id="kRoasD"></span></div>
+      <div class="kpi"><small>Lucro / encomenda</small><strong id="kLE">–</strong><span id="kLED"></span></div>
+    </div>
+
+    <div class="card">
+      <h2 id="tituloGrafico">Lucro por dia</h2>
+      <div class="grafico"><canvas id="grafico" role="img" aria-label="Gráfico de lucro"></canvas></div>
+    </div>
+
+    <div class="card">
+      <h2>Destaques</h2>
+      <table><tbody id="tbDest"></tbody></table>
+    </div>
+
+    <div class="card">
+      <h2>Para onde foi o dinheiro</h2>
+      <table><tbody id="tbCustos"></tbody></table>
+    </div>
+
+    <div class="card">
+      <h2 id="tituloTabela">Dias</h2>
+      <div class="scroll"><table>
+        <thead><tr><th id="thTabela">Dia</th><th>Enc.</th><th>Faturação</th><th>Lucro</th></tr></thead>
+        <tbody id="tbDias"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- HISTÓRICO -->
+  <section id="vHist" hidden>
+    <div id="listaHist"></div>
+  </section>
+
+  <!-- DEFINIÇÕES -->
+  <section id="vDefs" hidden>
+    <div class="card">
+      <h2>Percentagens</h2>
+      <div class="grid2">
+        <div><label for="cfgCom">Comissão por encomenda (%)</label><input id="cfgCom" type="text" inputmode="decimal"></div>
+        <div><label for="cfgEm">Fundo de emergência (%)</label><input id="cfgEm" type="text" inputmode="decimal"></div>
+      </div>
+      <p class="ajuda">A comissão é tirada da faturação. Do lucro que sobra, esta % vai para o fundo de emergência e o resto para o saldo. Só se aplica aos dias que registares a partir de agora.</p>
+      <button class="primary full" id="btnGuardarCfg" style="margin-top:12px">Guardar</button>
+    </div>
+
+    <div class="card">
+      <h2>Lojas</h2>
+      <div id="listaLojas"></div>
+      <button class="link" id="btnAddLoja">+ Adicionar loja</button>
+    </div>
+
+    <button class="full" id="btnCSV">Exportar tudo (CSV)</button>
+    <button class="full" id="btnSair">Terminar sessão</button>
+  </section>
+</div>
+
+<!-- BARRA DE BAIXO -->
+<nav class="tabbar" id="tabbar" hidden>
+  <button data-vista="inicio" class="on">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Início
+  </button>
+  <button class="mais" id="btnMais" aria-label="Registar dia">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+  <button data-vista="hist">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Histórico
+  </button>
+</nav>
+
+<!-- REGISTAR DIA -->
+<dialog id="dlgDia">
+  <form id="formDia" autocomplete="off">
+    <div class="dlg-top"><h3 id="diaTitulo">Registar dia</h3><button type="button" class="ghost" data-fechar>Fechar</button></div>
+
+    <div class="grid2">
+      <div><label for="fData">Dia</label><input id="fData" type="date" required></div>
+      <div id="boxLoja"><label for="fLoja">Loja</label><select id="fLoja"></select></div>
+    </div>
+    <div class="existe" id="avisoExiste" hidden>Este dia já está registado — estás a editar.</div>
+
+    <div class="grid2">
+      <div><label for="fEnc">N.º de encomendas</label><input id="fEnc" type="number" inputmode="numeric" min="0" step="1" placeholder="0"></div>
+      <div><label for="fFat">Faturação (€)</label><input id="fFat" type="text" inputmode="decimal" placeholder="0,00"></div>
+      <div><label for="fPub">Publicidade (€)</label><input id="fPub" type="text" inputmode="decimal" placeholder="0,00"></div>
+      <div><label for="fEnv">Envios (€)</label><input id="fEnv" type="text" inputmode="decimal" placeholder="0,00"></div>
+      <div><label for="fTax">Taxas (€)</label><input id="fTax" type="text" inputmode="decimal" placeholder="0,00"></div>
+      <div><label for="fProd">Produto (€)</label><input id="fProd" type="text" inputmode="decimal" placeholder="0,00"></div>
+    </div>
+
+    <label for="fNotas">Notas</label>
+    <textarea id="fNotas" rows="2" placeholder="Ex.: campanha nova, dia de promoção…"></textarea>
+
+    <div class="preview">
+      <div class="l"><span>Faturação</span><span id="pFat">0,00 €</span></div>
+      <div class="l"><span id="pComLbl">− Comissão (5%)</span><span id="pCom">0,00 €</span></div>
+      <div class="l"><span>− Publicidade, envios, taxas, produto</span><span id="pCustos">0,00 €</span></div>
+      <div class="res"><span>Lucro do dia</span><strong id="pLucro">0,00 €</strong></div>
+      <div class="split"><span id="pSaldoLbl">Saldo (60%)</span><span id="pSaldo">0,00 €</span></div>
+      <div class="split muted"><span id="pEmLbl">Fundo de emergência (40%)</span><span id="pEm">0,00 €</span></div>
+    </div>
+
+    <div class="acoes">
+      <button type="button" class="danger" id="btnApagarDia" hidden>Apagar</button>
+      <button type="submit" class="primary" id="btnGuardarDia">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- LOJA -->
+<dialog id="dlgLoja">
+  <form id="formLoja" autocomplete="off">
+    <div class="dlg-top"><h3 id="lojaTitulo">Nova loja</h3><button type="button" class="ghost" data-fechar>Fechar</button></div>
+    <label for="lNome">Nome</label>
+    <input id="lNome" type="text" required>
+    <label for="lCor">Cor</label>
+    <input id="lCor" type="color" value="#22c55e">
+    <label class="check"><input id="lAtiva" type="checkbox" checked> Ativa</label>
+    <div class="acoes">
+      <button type="button" class="danger" id="btnApagarLoja" hidden>Apagar</button>
+      <button type="submit" class="primary">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast"></div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+  // ===================== CONFIGURAÇÃO =====================
+  const SUPABASE_URL = 'https://hcvinyxigzulenwvdhqr.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_6D1ikaiic504ZI-ha_EkbA_Ra4mVa2B';
+  // ========================================================
+
+  const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s) => document.querySelectorAll(s);
+  const eur = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' });
+  const pct = new Intl.NumberFormat('pt-PT', { maximumFractionDigits: 1 });
+  const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  const MESES_C = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  const DIAS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const MONEY = ['faturacao', 'publicidade', 'envios', 'taxas', 'produto', 'comissao_percent', 'emergencia_percent'];
+
+  // ---------- estado ----------
+  let lojas = [], config = { comissao_percent: 5, emergencia_percent: 40 };
+  let dias = [];
+  let modo = '7d', ref = null, filtroLoja = '', vista = 'inicio';
+  let userId = null, chart = null;
+  let editId = null, editLoja = null, pctAtual = { c: 5, e: 40 };
+
+  // ---------- utilitários ----------
+  const pad = (n) => String(n).padStart(2, '0');
+  const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const parseISO = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+  const hoje = () => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); };
+  const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+  const diffDays = (a, b) => Math.round((b - a) / 86400000);
+  const minD = (a, b) => (a < b ? a : b);
+  const ddmm = (d) => `${pad(d.getDate())}/${pad(d.getMonth() + 1)}`;
+  const nomeDia = (s) => { const d = parseISO(s); return `${DIAS[d.getDay()]} ${ddmm(d)}`; };
+  const r2 = (n) => Math.round(n * 100) / 100;
+  const num = (v) => { const n = parseFloat(String(v ?? '').replace(/\s/g, '').replace(',', '.')); return Number.isFinite(n) ? r2(n) : 0; };
+  const fmtIn = (n) => (Number(n) ? String(r2(Number(n))).replace('.', ',') : '');
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const cls = (v) => (v < 0 ? 'neg' : 'pos');
+  const lojaById = (id) => lojas.find((l) => l.id === id);
+  const nomeLoja = (id) => (id ? lojaById(id)?.nome ?? '—' : 'Todas juntas');
+  const guardarLS = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+  const lerLS = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
+
+  let toastTimer;
+  function toast(msg) {
+    const t = $('#toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  }
+  function erroMsg(error) {
+    if (/schema cache|does not exist/i.test(error.message)) return 'Falta correr o script supabase.sql no Supabase.';
+    return 'Erro: ' + error.message;
+  }
+
+  $$('[data-fechar]').forEach((b) => b.addEventListener('click', () => b.closest('dialog').close()));
+
+  // ---------- contas ----------
+  function calc(o) {
+    o.comissao = r2(o.faturacao * o.comissao_percent / 100);
+    o.custos = r2(o.publicidade + o.envios + o.taxas + o.produto);
+    o.lucro = r2(o.faturacao - o.comissao - o.custos);
+    o.emergencia = r2(o.lucro * o.emergencia_percent / 100);
+    o.saldo = r2(o.lucro - o.emergencia);
+    return o;
+  }
+
+  function norm(r) {
+    const o = { ...r, encomendas: +r.encomendas || 0 };
+    MONEY.forEach((k) => (o[k] = +r[k] || 0));
+    return calc(o);
+  }
+
+  function somar(lista) {
+    const s = { n: lista.length, enc: 0, fat: 0, com: 0, pub: 0, env: 0, tax: 0, prod: 0, lucro: 0, emerg: 0, saldo: 0 };
+    for (const d of lista) {
+      s.enc += d.encomendas; s.fat += d.faturacao; s.com += d.comissao; s.pub += d.publicidade;
+      s.env += d.envios; s.tax += d.taxas; s.prod += d.produto; s.lucro += d.lucro; s.emerg += d.emergencia; s.saldo += d.saldo;
+    }
+    s.dias = new Set(lista.map((d) => d.data)).size;
+    s.custos = s.com + s.pub + s.env + s.tax + s.prod;
+    s.roas = s.pub ? s.fat / s.pub : null;
+    s.lucroEnc = s.enc ? s.lucro / s.enc : null;
+    s.ticket = s.enc ? s.fat / s.enc : null;
+    s.margem = s.fat ? (s.lucro / s.fat) * 100 : null;
+    return s;
+  }
+
+  // 7 e 30 dias acabam ontem (o dia de hoje ainda não está registado)
+  const refInicial = () => (modo === '7d' || modo === '30d' ? addDays(hoje(), -1) : hoje());
+
+  const filtrados = () => (filtroLoja ? dias.filter((d) => String(d.loja_id ?? '') === filtroLoja) : dias);
+  const entre = (lista, ini, fim) => { const a = iso(ini), b = iso(fim); return lista.filter((d) => d.data >= a && d.data < b); };
+
+  function agrupar(lista, keyFn) {
+    const m = new Map();
+    for (const d of lista) { const k = keyFn(d); if (!m.has(k)) m.set(k, []); m.get(k).push(d); }
+    return m;
+  }
+
+  // ---------- período ----------
+  function periodo() {
+    const h = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate());
+    if (modo === '7d' || modo === '30d') {
+      const n = modo === '7d' ? 7 : 30;
+      const fim = addDays(h, 1), ini = addDays(fim, -n);
+      return { ini, fim, pIni: addDays(ini, -n), pFim: ini, label: `${ddmm(ini)} – ${ddmm(addDays(fim, -1))}` };
+    }
+    let ini, fim, pIni, label;
+    if (modo === 'mes') {
+      ini = new Date(h.getFullYear(), h.getMonth(), 1); fim = new Date(h.getFullYear(), h.getMonth() + 1, 1);
+      pIni = new Date(h.getFullYear(), h.getMonth() - 1, 1); label = `${MESES[ini.getMonth()]} ${ini.getFullYear()}`;
+    } else {
+      ini = new Date(h.getFullYear(), 0, 1); fim = new Date(h.getFullYear() + 1, 0, 1);
+      pIni = new Date(h.getFullYear() - 1, 0, 1); label = String(ini.getFullYear());
+    }
+    // Compara com o mesmo número de dias do período anterior (justo para o mês/ano a decorrer)
+    const nDias = Math.max(0, diffDays(ini, minD(fim, hoje())));
+    return { ini, fim, pIni, pFim: minD(addDays(pIni, nDias), ini), label };
+  }
+
+  function mover(delta) {
+    if (modo === '7d') ref = addDays(ref, 7 * delta);
+    else if (modo === '30d') ref = addDays(ref, 30 * delta);
+    else if (modo === 'mes') ref = new Date(ref.getFullYear(), ref.getMonth() + delta, 1);
+    else ref = new Date(ref.getFullYear() + delta, 0, 1);
+    if (ref > refInicial()) ref = refInicial();
+    renderInicio();
+  }
+
+  $('#btnAnt').addEventListener('click', () => mover(-1));
+  $('#btnSeg').addEventListener('click', () => mover(1));
+  $('#periodoLabel').addEventListener('click', () => { ref = refInicial(); renderInicio(); });
+  $$('#segModo button').forEach((b) =>
+    b.addEventListener('click', () => {
+      modo = b.dataset.modo;
+      $$('#segModo button').forEach((x) => x.classList.toggle('on', x === b));
+      ref = refInicial();
+      renderInicio();
+    })
+  );
+
+  // ---------- navegação ----------
+  function mostrarVista(v) {
+    vista = v;
+    $('#vInicio').hidden = v !== 'inicio';
+    $('#vHist').hidden = v !== 'hist';
+    $('#vDefs').hidden = v !== 'defs';
+    $('#titulo').textContent = v === 'defs' ? 'Definições' : v === 'hist' ? 'Histórico' : 'Lucros';
+    $('#filtroLoja').hidden = v === 'defs' || lojas.length < 2;
+    $$('#tabbar [data-vista]').forEach((b) => b.classList.toggle('on', b.dataset.vista === v));
+    if (v === 'defs') renderDefs();
+    if (v === 'hist') renderHist();
+    if (v === 'inicio') renderInicio();
+    window.scrollTo(0, 0);
+  }
+  $$('#tabbar [data-vista]').forEach((b) => b.addEventListener('click', () => mostrarVista(b.dataset.vista)));
+  $('#btnDefs').addEventListener('click', () => mostrarVista('defs'));
+  $('#btnMais').addEventListener('click', () => abrirDia());
+  $('#btnRegOntem').addEventListener('click', () => abrirDia(iso(addDays(hoje(), -1))));
+  $('#filtroLoja').addEventListener('change', (e) => { filtroLoja = e.target.value; renderTudo(); });
+
+  // ---------- carregar dados ----------
+  async function carregarBase() {
+    const [l, c] = await Promise.all([
+      sb.from('lojas').select('*').order('id'),
+      sb.from('config').select('*').maybeSingle(),
+    ]);
+    const erro = l.error || c.error;
+    if (erro) { toast(erroMsg(erro)); return false; }
+    lojas = l.data;
+    if (c.data) config = { comissao_percent: +c.data.comissao_percent, emergencia_percent: +c.data.emergencia_percent };
+
+    if (!lojas.length) {
+      const { error } = await sb.from('lojas').insert([{ nome: 'iStamPic' }, { nome: 'Lycases', cor: '#3b82f6' }]);
+      if (error) { toast(erroMsg(error)); return false; }
+      return carregarBase();
+    }
+
+    const atual = filtroLoja;
+    $('#filtroLoja').innerHTML = '<option value="">Todas as lojas</option>' +
+      lojas.map((x) => `<option value="${x.id}">${esc(x.nome)}</option>`).join('');
+    $('#filtroLoja').value = lojas.some((x) => String(x.id) === atual) ? atual : '';
+    filtroLoja = $('#filtroLoja').value;
+    return true;
+  }
+
+  async function carregarDias() {
+    const out = [];
+    for (let de = 0; ; de += 1000) {
+      const { data, error } = await sb.from('dias').select('*').order('data', { ascending: false }).order('id').range(de, de + 999);
+      if (error) { toast(erroMsg(error)); return false; }
+      out.push(...data);
+      if (data.length < 1000) break;
+    }
+    dias = out.map(norm);
+    return true;
+  }
+
+  function renderTudo() {
+    if (vista === 'hist') renderHist(); else if (vista === 'defs') renderDefs(); else renderInicio();
+  }
+
+  // ---------- INÍCIO ----------
+  function delta(cur, prev, inverso = false) {
+    if (cur == null || prev == null || !prev) return '';
+    const p = ((cur - prev) / Math.abs(prev)) * 100;
+    const bom = inverso ? p <= 0 : p >= 0;
+    return `<b class="${bom ? 'pos' : 'neg'}">${p >= 0 ? '▲' : '▼'} ${pct.format(Math.abs(p))}%</b> vs anterior`;
+  }
+
+  function renderInicio() {
+    const lista = filtrados();
+    const h = hoje();
+
+    // Saldo do mês atual
+    const mIni = new Date(h.getFullYear(), h.getMonth(), 1), mFim = new Date(h.getFullYear(), h.getMonth() + 1, 1);
+    const sm = somar(entre(lista, mIni, mFim));
+    const sempre = somar(lista);
+    $('#sLbl').textContent = `Saldo de ${MESES[h.getMonth()]} (${pct.format(100 - config.emergencia_percent)}% do lucro)`;
+    $('#sSaldo').textContent = eur.format(sm.saldo);
+    $('#sEmerg').textContent = `Fundo de emergência: ${eur.format(sm.emerg)}`;
+    $('#sLucroMes').textContent = eur.format(sm.lucro);
+    $('#sDias').textContent = sm.dias;
+    $('#sSempre').textContent = eur.format(sempre.lucro);
+
+    // Aviso: ontem por registar
+    const ontem = iso(addDays(h, -1));
+    const temOntem = lista.some((d) => d.data === ontem);
+    $('#avisoOntem').hidden = temOntem;
+    $('#avisoOntemTxt').textContent = `Ainda não registaste ontem (${nomeDia(ontem)}).`;
+
+    // Período
+    if (!ref) ref = refInicial();
+    const p = periodo();
+    $('#periodoLabel').textContent = p.label;
+    const atual = entre(lista, p.ini, p.fim);
+    const ant = entre(lista, p.pIni, p.pFim);
+    const s = somar(atual), a = somar(ant);
+    $('#comparar').textContent = ant.length
+      ? `Comparado com ${ddmm(p.pIni)} – ${ddmm(addDays(p.pFim, -1))}`
+      : 'Sem dados do período anterior para comparar';
+
+    $('#kLucro').textContent = eur.format(s.lucro);
+    $('#kLucro').className = cls(s.lucro);
+    $('#kLucroD').innerHTML = delta(s.lucro, a.lucro) || (s.margem != null ? `margem ${pct.format(s.margem)}%` : '');
+    $('#kFat').textContent = eur.format(s.fat);
+    $('#kFatD').innerHTML = delta(s.fat, a.fat);
+    $('#kEnc').textContent = s.enc;
+    $('#kEncD').innerHTML = delta(s.enc, a.enc) || (s.ticket != null ? `ticket médio ${eur.format(s.ticket)}` : '');
+    $('#kPub').textContent = eur.format(s.pub);
+    $('#kPubD').innerHTML = delta(s.pub, a.pub, true) || (s.fat ? `${pct.format((s.pub / s.fat) * 100)}% da faturação` : '');
+    $('#kRoas').textContent = s.roas != null ? `${pct.format(s.roas)}x` : '–';
+    $('#kRoasD').innerHTML = delta(s.roas, a.roas) || 'faturação ÷ publicidade';
+    $('#kLE').textContent = s.lucroEnc != null ? eur.format(s.lucroEnc) : '–';
+    $('#kLED').innerHTML = delta(s.lucroEnc, a.lucroEnc);
+
+    // Agrupar por dia (ou por mês no modo Ano)
+    const porDia = agrupar(atual, (d) => d.data);
+    const diasOrd = [...porDia.keys()].sort().reverse();
+    const somasDia = diasOrd.map((k) => ({ k, s: somar(porDia.get(k)), notas: porDia.get(k).some((d) => d.notas) }));
+
+    // Gráfico
+    let barras;
+    if (modo === 'ano') {
+      const porMes = agrupar(atual, (d) => d.data.slice(0, 7));
+      barras = MESES_C.map((m, i) => {
+        const k = `${p.ini.getFullYear()}-${pad(i + 1)}`;
+        return { label: m, tip: `${MESES[i]} ${p.ini.getFullYear()}`, s: porMes.has(k) ? somar(porMes.get(k)) : null };
+      });
+    } else {
+      barras = [];
+      for (let d = new Date(p.ini); d < p.fim; d = addDays(d, 1)) {
+        const k = iso(d);
+        barras.push({
+          label: modo === '7d' ? `${DIAS[d.getDay()]} ${d.getDate()}` : String(d.getDate()),
+          tip: nomeDia(k), s: porDia.has(k) ? somar(porDia.get(k)) : null,
+        });
+      }
+    }
+    $('#tituloGrafico').textContent = modo === 'ano' ? 'Lucro por mês' : 'Lucro por dia';
+    desenharGrafico(barras);
+
+    // Destaques
+    const melhor = somasDia.reduce((m, x) => (!m || x.s.lucro > m.s.lucro ? x : m), null);
+    const pior = somasDia.reduce((m, x) => (!m || x.s.lucro < m.s.lucro ? x : m), null);
+    const dest = [
+      ['Média de lucro por dia', s.dias ? eur.format(s.lucro / s.dias) : '–', s.dias ? cls(s.lucro) : ''],
+      ['Média de encomendas por dia', s.dias ? pct.format(s.enc / s.dias) : '–', ''],
+      ['Melhor dia', melhor ? `${nomeDia(melhor.k)} · ${eur.format(melhor.s.lucro)}` : '–', melhor ? 'pos' : ''],
+      ['Pior dia', pior && pior !== melhor ? `${nomeDia(pior.k)} · ${eur.format(pior.s.lucro)}` : '–', pior ? cls(pior.s.lucro) : ''],
+      ['Dias registados', String(s.dias), ''],
+    ];
+    $('#tbDest').innerHTML = dest.map(([n, v, c]) => `<tr><td>${n}</td><td class="${c}">${v}</td></tr>`).join('');
+
+    // Custos
+    const custos = [
+      [`Comissão (${pct.format(config.comissao_percent)}%)`, s.com],
+      ['Publicidade', s.pub], ['Envios', s.env], ['Taxas', s.tax], ['Produto', s.prod],
+    ];
+    const pf = (v) => (s.fat ? `${pct.format((v / s.fat) * 100)}%` : '');
+    $('#tbCustos').innerHTML =
+      custos.map(([n, v]) => `<tr><td>${n}</td><td class="muted">${pf(v)}</td><td>${eur.format(v)}</td></tr>`).join('') +
+      `<tr class="total"><td>Total custos</td><td class="muted">${pf(s.custos)}</td><td>${eur.format(s.custos)}</td></tr>` +
+      `<tr class="total"><td>Lucro</td><td class="muted">${pf(s.lucro)}</td><td class="${cls(s.lucro)}">${eur.format(s.lucro)}</td></tr>`;
+
+    // Tabela de dias (ou meses)
+    let linhas;
+    if (modo === 'ano') {
+      $('#tituloTabela').textContent = 'Meses'; $('#thTabela').textContent = 'Mês';
+      linhas = barras.filter((b) => b.s).reverse().map((b) => ({ label: b.tip, s: b.s, data: null }));
+    } else {
+      $('#tituloTabela').textContent = 'Dias'; $('#thTabela').textContent = 'Dia';
+      linhas = somasDia.map((x) => ({ label: nomeDia(x.k) + (x.notas ? ' 📝' : ''), s: x.s, data: x.k }));
+    }
+    $('#tbDias').innerHTML = linhas.length
+      ? linhas.map((l) => `<tr class="${l.data ? 'clicavel' : ''}" ${l.data ? `data-dia="${l.data}"` : ''}><td>${l.label}</td><td>${l.s.enc}</td><td>${eur.format(l.s.fat)}</td><td class="${cls(l.s.lucro)}">${eur.format(l.s.lucro)}</td></tr>`).join('') +
+        `<tr class="total"><td>Total</td><td>${s.enc}</td><td>${eur.format(s.fat)}</td><td class="${cls(s.lucro)}">${eur.format(s.lucro)}</td></tr>`
+      : '<tr><td colspan="4" class="muted">Sem registos neste período</td></tr>';
+  }
+
+  $('#tbDias').addEventListener('click', (e) => {
+    const tr = e.target.closest('[data-dia]');
+    if (!tr) return;
+    const reg = filtrados().find((d) => d.data === tr.dataset.dia);
+    abrirDia(tr.dataset.dia, reg ? reg.loja_id : undefined);
+  });
+
+  function desenharGrafico(barras) {
+    if (typeof Chart === 'undefined') return;
+    const css = getComputedStyle(document.documentElement);
+    const cor = (v) => css.getPropertyValue(v).trim();
+    const valores = barras.map((b) => (b.s ? r2(b.s.lucro) : 0));
+    if (chart) chart.destroy();
+    chart = new Chart($('#grafico'), {
+      type: 'bar',
+      data: {
+        labels: barras.map((b) => b.label),
+        datasets: [{
+          label: 'Lucro', data: valores,
+          backgroundColor: valores.map((v) => (v < 0 ? cor('--neg') : cor('--pos'))),
+          borderRadius: 4, borderSkipped: 'start', maxBarThickness: 34,
+        }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, animation: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: (it) => barras[it[0].dataIndex].tip,
+              label: (c) => {
+                const s = barras[c.dataIndex].s;
+                if (!s) return 'Sem registo';
+                return [`Lucro: ${eur.format(s.lucro)}`, `Faturação: ${eur.format(s.fat)}`, `Encomendas: ${s.enc}`, `Publicidade: ${eur.format(s.pub)}`];
+              },
+            },
+          },
+        },
+        scales: {
+          x: { grid: { display: false }, border: { color: cor('--line') }, ticks: { color: cor('--muted'), maxRotation: 0, autoSkipPadding: 6, font: { size: 11 } } },
+          y: { grid: { color: cor('--line') }, border: { display: false }, ticks: { color: cor('--muted'), font: { size: 11 }, maxTicksLimit: 5, callback: (v) => `${v} €` } },
+        },
+      },
+    });
+  }
+
+  // ---------- HISTÓRICO ----------
+  function renderHist() {
+    const lista = filtrados();
+    if (!lista.length) { $('#listaHist').innerHTML = '<p class="vazio">Ainda não tens dias registados.<br>Carrega no + para registar o primeiro.</p>'; return; }
+    const meses = agrupar(lista, (d) => d.data.slice(0, 7));
+    const chaves = [...meses.keys()].sort().reverse();
+    const mesAtual = iso(hoje()).slice(0, 7);
+    const variasLojas = lojas.length > 1 && !filtroLoja;
+
+    $('#listaHist').innerHTML = chaves.map((k) => {
+      const regs = meses.get(k).sort((a, b) => (a.data < b.data ? 1 : a.data > b.data ? -1 : (a.loja_id ?? 0) - (b.loja_id ?? 0)));
+      const s = somar(regs);
+      const [y, m] = k.split('-').map(Number);
+      const itens = regs.map((d) => `
+        <button class="item" data-id="${d.id}">
+          <span class="info"><strong>${nomeDia(d.data)}</strong>${variasLojas ? ` <span class="muted">· ${esc(nomeLoja(d.loja_id))}</span>` : ''}
+            <small>${d.encomendas} enc. · faturação ${eur.format(d.faturacao)} · ads ${eur.format(d.publicidade)}</small>
+            ${d.notas ? `<small class="nota">📝 ${esc(d.notas)}</small>` : ''}</span>
+          <span class="valores"><strong class="${cls(d.lucro)}">${eur.format(d.lucro)}</strong><small>saldo ${eur.format(d.saldo)}</small></span>
+        </button>`).join('');
+      return `<details class="mes" ${k === mesAtual || k === chaves[0] ? 'open' : ''}>
+        <summary>
+          <div class="mes-top"><strong>${MESES[m - 1]} ${y}</strong><strong class="${cls(s.lucro)}">${eur.format(s.lucro)}</strong></div>
+          <div class="mes-res"><span>Saldo <b>${eur.format(s.saldo)}</b></span><span>Emergência <b>${eur.format(s.emerg)}</b></span>
+            <span><b>${s.enc}</b> enc.</span><span>Faturação <b>${eur.format(s.fat)}</b></span></div>
+        </summary>
+        ${itens}
+      </details>`;
+    }).join('');
+  }
+
+  $('#listaHist').addEventListener('click', (e) => {
+    const b = e.target.closest('.item');
+    if (!b) return;
+    const d = dias.find((x) => x.id === Number(b.dataset.id));
+    if (d) abrirDia(d.data, d.loja_id);
+  });
+
+  // ---------- REGISTAR DIA ----------
+  const CAMPOS = { fEnc: 'encomendas', fFat: 'faturacao', fPub: 'publicidade', fEnv: 'envios', fTax: 'taxas', fProd: 'produto' };
+
+  function lojaForm() { return $('#fLoja').value ? Number($('#fLoja').value) : null; }
+
+  function preencherExistente() {
+    const data = $('#fData').value, loja = lojaForm();
+    const reg = dias.find((d) => d.data === data && (d.loja_id ?? null) === loja);
+    editId = reg ? reg.id : null;
+    $('#avisoExiste').hidden = !reg;
+    $('#btnApagarDia').hidden = !reg;
+    $('#diaTitulo').textContent = reg ? 'Editar dia' : 'Registar dia';
+    for (const [id, k] of Object.entries(CAMPOS)) {
+      $('#' + id).value = reg ? (k === 'encomendas' ? (reg[k] || '') : fmtIn(reg[k])) : '';
+    }
+    $('#fNotas').value = reg?.notas ?? '';
+    pctAtual = reg ? { c: reg.comissao_percent, e: reg.emergencia_percent } : { c: config.comissao_percent, e: config.emergencia_percent };
+    atualizarPreview();
+  }
+
+  function atualizarPreview() {
+    const o = calc({
+      faturacao: num($('#fFat').value), publicidade: num($('#fPub').value), envios: num($('#fEnv').value),
+      taxas: num($('#fTax').value), produto: num($('#fProd').value),
+      comissao_percent: pctAtual.c, emergencia_percent: pctAtual.e,
+    });
+    $('#pFat').textContent = eur.format(o.faturacao);
+    $('#pComLbl').textContent = `− Comissão (${pct.format(pctAtual.c)}%)`;
+    $('#pCom').textContent = eur.format(o.comissao);
+    $('#pCustos').textContent = eur.format(o.custos);
+    $('#pLucro').textContent = eur.format(o.lucro);
+    $('#pLucro').className = cls(o.lucro);
+    $('#pSaldoLbl').textContent = `Saldo (${pct.format(100 - pctAtual.e)}%)`;
+    $('#pSaldo').textContent = eur.format(o.saldo);
+    $('#pEmLbl').textContent = `Fundo de emergência (${pct.format(pctAtual.e)}%)`;
+    $('#pEm').textContent = eur.format(o.emergencia);
+  }
+
+  Object.keys(CAMPOS).forEach((id) => $('#' + id).addEventListener('input', atualizarPreview));
+  $('#fData').addEventListener('change', preencherExistente);
+  $('#fLoja').addEventListener('change', preencherExistente);
+
+  function abrirDia(data = null, lojaId = undefined) {
+    const ativas = lojas.filter((l) => l.ativa || l.id === lojaId);
+    $('#fLoja').innerHTML = ativas.map((l) => `<option value="${l.id}">${esc(l.nome)}</option>`).join('') +
+      '<option value="">Todas juntas</option>';
+    $('#boxLoja').hidden = ativas.length < 2 && lojaId === undefined;
+    $('#fData').value = data || iso(addDays(hoje(), -1));
+    let loja;
+    if (lojaId !== undefined) loja = lojaId ?? '';
+    else {
+      const ult = lerLS('ultLoja');
+      loja = filtroLoja || (ult === '__todas' ? '' : ult) || $('#fLoja').options[0]?.value || '';
+    }
+    if (![...$('#fLoja').options].some((o) => o.value === String(loja))) loja = $('#fLoja').options[0]?.value ?? '';
+    $('#fLoja').value = String(loja);
+    preencherExistente();
+    $('#dlgDia').showModal();
+  }
+
+  $('#formDia').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const payload = {
+      data: $('#fData').value,
+      loja_id: lojaForm(),
+      encomendas: parseInt($('#fEnc').value, 10) || 0,
+      faturacao: num($('#fFat').value),
+      publicidade: num($('#fPub').value),
+      envios: num($('#fEnv').value),
+      taxas: num($('#fTax').value),
+      produto: num($('#fProd').value),
+      comissao_percent: pctAtual.c,
+      emergencia_percent: pctAtual.e,
+      notas: $('#fNotas').value.trim() || null,
+    };
+    const btn = $('#btnGuardarDia');
+    btn.disabled = true;
+    const { error } = editId
+      ? await sb.from('dias').update(payload).eq('id', editId)
+      : await sb.from('dias').insert(payload);
+    btn.disabled = false;
+    if (error) return toast(error.code === '23505' ? 'Já existe um registo para esse dia e loja.' : erroMsg(error));
+    guardarLS('ultLoja', payload.loja_id ? String(payload.loja_id) : '__todas');
+    $('#dlgDia').close();
+    toast(`Dia guardado · lucro ${eur.format(calc({ ...payload }).lucro)}`);
+    await carregarDias();
+    renderTudo();
+  });
+
+  $('#btnApagarDia').addEventListener('click', async () => {
+    if (!editId || !confirm('Apagar o registo deste dia?')) return;
+    const { error } = await sb.from('dias').delete().eq('id', editId);
+    if (error) return toast(erroMsg(error));
+    $('#dlgDia').close();
+    toast('Registo apagado');
+    await carregarDias();
+    renderTudo();
+  });
+
+  // ---------- DEFINIÇÕES ----------
+  function renderDefs() {
+    $('#cfgCom').value = String(config.comissao_percent).replace('.', ',');
+    $('#cfgEm').value = String(config.emergencia_percent).replace('.', ',');
+    $('#listaLojas').innerHTML = lojas.map((l) => `
+      <button class="linha" data-loja="${l.id}">
+        <span><span class="dot" style="background:${esc(l.cor)}"></span>${esc(l.nome)}${l.ativa ? '' : '<span class="tag">inativa</span>'}</span>
+        <span class="muted">›</span>
+      </button>`).join('') || '<p class="muted">Sem lojas.</p>';
+  }
+
+  $('#btnGuardarCfg').addEventListener('click', async () => {
+    const c = num($('#cfgCom').value), e = num($('#cfgEm').value);
+    if (c < 0 || c > 100 || e < 0 || e > 100) return toast('As percentagens têm de estar entre 0 e 100');
+    const { error } = await sb.from('config').upsert({ user_id: userId, comissao_percent: c, emergencia_percent: e });
+    if (error) return toast(erroMsg(error));
+    config = { comissao_percent: c, emergencia_percent: e };
+    toast('Percentagens guardadas');
+  });
+
+  $('#listaLojas').addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-loja]');
+    if (b) abrirLoja(lojaById(Number(b.dataset.loja)));
+  });
+  $('#btnAddLoja').addEventListener('click', () => abrirLoja());
+
+  function abrirLoja(l = null) {
+    editLoja = l ? l.id : null;
+    $('#lojaTitulo').textContent = l ? 'Editar loja' : 'Nova loja';
+    $('#lNome').value = l?.nome ?? '';
+    $('#lCor').value = l?.cor ?? '#22c55e';
+    $('#lAtiva').checked = l ? l.ativa : true;
+    $('#btnApagarLoja').hidden = !l;
+    $('#dlgLoja').showModal();
+  }
+
+  $('#formLoja').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const payload = { nome: $('#lNome').value.trim(), cor: $('#lCor').value, ativa: $('#lAtiva').checked };
+    if (!payload.nome) return toast('Indica o nome');
+    const { error } = editLoja
+      ? await sb.from('lojas').update(payload).eq('id', editLoja)
+      : await sb.from('lojas').insert(payload);
+    if (error) return toast(erroMsg(error));
+    $('#dlgLoja').close();
+    toast('Loja guardada');
+    await carregarBase();
+    renderDefs();
+  });
+
+  $('#btnApagarLoja').addEventListener('click', async () => {
+    if (!editLoja || !confirm('Apagar esta loja?')) return;
+    const { error } = await sb.from('lojas').delete().eq('id', editLoja);
+    if (error) return toast(error.code === '23503' ? 'Esta loja tem dias registados. Desativa-a em vez de apagar.' : erroMsg(error));
+    $('#dlgLoja').close();
+    toast('Loja apagada');
+    await carregarBase();
+    renderDefs();
+  });
+
+  // ---------- CSV ----------
+  $('#btnCSV').addEventListener('click', () => {
+    const n = (v) => String(r2(v)).replace('.', ',');
+    const q = (s) => `"${String(s ?? '').replace(/"/g, '""')}"`;
+    const L = ['Data;Loja;Encomendas;Faturação;Comissão;Publicidade;Envios;Taxas;Produto;Lucro;Saldo;Fundo emergência;Notas'];
+    [...dias].sort((a, b) => (a.data < b.data ? -1 : 1)).forEach((d) =>
+      L.push([d.data, q(nomeLoja(d.loja_id)), d.encomendas, n(d.faturacao), n(d.comissao), n(d.publicidade), n(d.envios), n(d.taxas), n(d.produto), n(d.lucro), n(d.saldo), n(d.emergencia), q(d.notas)].join(';'))
+    );
+    const blob = new Blob(['﻿' + L.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `lucros_${iso(hoje())}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  });
+
+  // ---------- LOGIN ----------
+  $('#formLogin').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    $('#loginErro').textContent = '';
+    const btn = $('#btnEntrar');
+    btn.disabled = true;
+    const { error } = await sb.auth.signInWithPassword({ email: $('#lEmail').value.trim(), password: $('#lPass').value });
+    btn.disabled = false;
+    if (error) $('#loginErro').textContent = error.message === 'Invalid login credentials' ? 'Email ou password errados.' : error.message;
+  });
+
+  $('#btnSair').addEventListener('click', () => sb.auth.signOut());
+
+  sb.auth.onAuthStateChange((_evento, session) => {
+    const id = session?.user?.id ?? null;
+    $('#vLogin').hidden = !!id;
+    $('#tabbar').hidden = !id;
+    $('#btnDefs').hidden = !id;
+    if (id && id !== userId) {
+      setTimeout(async () => {
+        if (await carregarBase()) await carregarDias();
+        mostrarVista('inicio');
+      }, 0);
+    }
+    if (!id) {
+      ['#vInicio', '#vHist', '#vDefs', '#filtroLoja'].forEach((s) => ($(s).hidden = true));
+      $('#titulo').textContent = 'Lucros';
+      dias = [];
+    }
+    userId = id;
+  });
+
+  if (SUPABASE_KEY.startsWith('COLA_AQUI')) $('#loginErro').textContent = 'Falta colar a Publishable key no index.html.';
+
+  // ---------- PWA ----------
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+</script>
+</body>
+</html>
